@@ -64,6 +64,21 @@ for (i in 1:50000){
 cat("For a Strike Price K =", K,": out of 50.000 Simulations, \nthe mean of the stock's price path was larger than K:\n", length(MC_A[MC_A > 0]),"time(s), i.e,",(length(MC_A[MC_A > 0])/50000),"% of the time, \nby amount(s) of (discounted):", MC_A[MC_A > 0],"\n
     The MC Estimation produces an average discounted payoff of:", mean(MC_A),"\n")
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ### Exercise 4 ###
 
 T_end = 1 #samo
