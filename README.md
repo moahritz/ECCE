@@ -1,5 +1,5 @@
 # ECCE
-Repo for Econometrics in Finance stuff 
 
+Repo for Econometrics in Finance stuff
 
-first try: this is a local change in RSTudio
+first try: this is a local change in RSTudio...
