@@ -48,7 +48,7 @@ cat("The closed form price is", C,"\n")
 
 
 #2.
-#For the Asian Option we need the entire path and the take the mean of it!
+#For the Asian Option we need the entire path and then take the mean of it!
 #So we have a sequence of 252 days -> take the mean, put it into the max -> then we have one of the 50k simulations 
 
 MC_A = c()
