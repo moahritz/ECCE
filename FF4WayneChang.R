@@ -150,7 +150,7 @@ res <- dbSendQuery(wrds, "select DLSTDT, PERMNO, dlret
 crsp.msedelist <- dbFetch(res, n = -1)
 save(crsp.msedelist, file = "180619 crsp.msedelist.RData")
 
-# clean and marge data
+# clean and merge data
 crsp.msf <- crsp.msf %>%
   filter(!is.na(prc)) %>%
   mutate(Date = as.yearmon(as.Date(date))) %>%
@@ -176,7 +176,7 @@ data.crsp.m <- crsp.msf %>%
 data.crsp.m <- data.crsp.m %>%
   mutate(meq = shrout * abs(prc)) %>% # me for each permno
   group_by(Date, permco) %>%
-  mutate(ME = sum(meq)) %>% # to calc market cap, merge permnos with same permnco
+  mutate(ME = sum(meq)) %>% # to calc market cap, merge permnos with same permco
   arrange(Date, permco, desc(meq)) %>%
   group_by(Date, permco) %>%
   slice(1) %>% # keep only permno with largest meq
