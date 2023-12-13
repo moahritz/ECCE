@@ -69,7 +69,7 @@ res <- dbSendQuery(wrds, "select gvkey, cusip, datadate, fyr, fyear, sich, naics
                         xrd, xsga, xad, xlr, xint, intan, rdip, cogs, ib, indfmt, datafmt, popsrc, consol
                    from comp.funda
                    where indfmt='INDL' and datafmt='STD' and consol='C' and popsrc='D'")
-data_comp_raw <- dbFetch(res, n=-1)
+data_comp_raw <- dbFetch(res, n=-1) #Setting n to -1 is a common practice in many database-related functions in R. It indicates that you want to fetch all available rows from the query result.
 dbClearResult(res)
 
 ## CPI data for perpetual inventory method
@@ -233,6 +233,19 @@ data_ccm <-  data_ccmlink %>%
   filter(datadate >= linkdt & (datadate <= linkenddt | is.na(linkenddt))) %>%
   arrange(datadate, permno, linktype, linkprim) %>%
   distinct(datadate, permno, .keep_all = TRUE)
+
+
+
+#LinkType Codes:
+#   LU: Link research complete. Standard connection between databases.
+#   LC: Un-researched link to issue by CUSIP.
+#   LD: Duplicate link to a security. Another GVKEY/IID is a better link to that CRSP record.
+
+#LinkPrim Codes:
+#   P: Primary, identified by Compustat in monthly security data.
+#   C: Primary, assigned by CRSP to resolve ranges of overlapping or missing primary markers from Compustat in order to produce one primary security throughout the company history.
+
+
 
 ## Clean Compustat, create variables
 comp_prep <- lazy_dt(data_ccm, immutable=TRUE)  %>%
