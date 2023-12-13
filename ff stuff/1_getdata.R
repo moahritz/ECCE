@@ -183,6 +183,8 @@ crsp_m_bounds <- lazy_dt(as.data.table(crsp_m), immutable=FALSE) %>%
   summarise(first = first(Date), last = last(Date)) %>% 
   as.data.frame()
 
+#For each group, it calculates the first and last dates. This establishes the range of dates for each `permno`.
+
 ##prep and clean
 crsp_m1 <- crsp_m %>%
   select(Date, permno, comnam, shrcd, exchcd, hsiccd, shrout, prc, vol, retx, retadj, me) %>% 

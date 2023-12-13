@@ -128,7 +128,7 @@ rm(data.ccm, data.comp)
 ###############################################################################################################
 ### LOAD CRSP FROM WRDS ###
 # Downloads CRSP MSE, MSF, and MSEDELIST tables from WRDS
-# merges, cleans, and for market cap calc, combines permco's with multiple permnos (eg berkshire)
+# merges, cleans, and for market cap. calc., combines permco's with multiple permno's (eg berkshire)
 # no filtering 
 
 # SLOW CODE (30 mins)
@@ -155,14 +155,17 @@ crsp.msf <- crsp.msf %>%
   filter(!is.na(prc)) %>%
   mutate(Date = as.yearmon(as.Date(date))) %>%
   select(-date)
+
 crsp.mse <- crsp.mse %>%
   filter(!is.na(shrcd)) %>%
   mutate(Date = as.yearmon(as.Date(date))) %>%
   select(-date)
+
 crsp.msedelist <- crsp.msedelist %>%
   filter(!is.na(dlret)) %>%
   mutate(Date = as.yearmon(as.Date(dlstdt))) %>%
   select(-dlstdt)
+
 data.crsp.m <- crsp.msf %>%
   merge(crsp.mse, by=c("Date", "permno"), all=TRUE, allow.cartesian=TRUE) %>%
   merge(crsp.msedelist, by=c("Date", "permno"), all=TRUE, allow.cartesian=TRUE) %>%
@@ -176,14 +179,14 @@ data.crsp.m <- crsp.msf %>%
 data.crsp.m <- data.crsp.m %>%
   mutate(meq = shrout * abs(prc)) %>% # me for each permno
   group_by(Date, permco) %>%
-  mutate(ME = sum(meq)) %>% # to calc market cap, merge permnos with same permco
+  mutate(ME = sum(meq)) %>% # to calc. market cap, merge permnos with same permco
   arrange(Date, permco, desc(meq)) %>%
   group_by(Date, permco) %>%
-  slice(1) %>% # keep only permno with largest meq
+  slice(1) %>% # keep only permno with largest meq        --> WHY?
   ungroup
 
 save(data.crsp.m, file = "180619 data.crsp.m.RData")
-rm(crsp.mse, crsp.msf, crsp.msedelist)
+rm(crsp.mse, crsp.msf, crsp.msedelist)                  # Check datasets! ie wym
 
 # testing
 # summary(data.crsp.m)
@@ -196,7 +199,7 @@ rm(crsp.mse, crsp.msf, crsp.msedelist)
 # filters EXCHCD (NYSE, NASDAQ, AMEX) and SHRCD (10,11)
 
 Fill_TS_NAs <- function(main) {
-  # takes datat frame with Date and PERMNO as columns and fills in NAs where there are gaps
+  # takes data-frame with Date and PERMNO as columns and fills in NAs where there are gaps
   
   core <- select(main, Date, PERMNO)
   # find first and last dates of each PERMNO
@@ -227,12 +230,12 @@ data.crsp.cln <- data.crsp.m %>%
   Fill_TS_NAs %>% # fill in gap dates within each PERMNO with NAs to uses lead/lag (lead to NAs for SHRCD and EXCHCD); fn in AnoDecomp_Support
   mutate(PERMNO = as.factor(PERMNO)) %>%
   group_by(PERMNO) %>%
-  mutate(port.weight = as.numeric(ifelse(!is.na(lag(ME)), lag(ME), ME/(1+retx))), # calc portweight as ME at beginning of period
-         port.weight = ifelse(is.na(retadj) & is.na(prc), NA, port.weight)) %>% # remove portweights calc for date gaps
+  mutate(port.weight = as.numeric(ifelse(!is.na(lag(ME)), lag(ME), ME/(1+retx))), # calc PFweight as ME at beginning of period
+         port.weight = ifelse(is.na(retadj) & is.na(prc), NA, port.weight)) %>% # remove PFweights calc for date gaps
   ungroup %>% 
   rename(retadj.1mn = retadj) %>%
   arrange(Date, PERMNO) %>%
-  distinct(Date, PERMNO, .keep_all = TRUE) # hasn't been issue but just in case
+  distinct(Date, PERMNO, .keep_all = TRUE) # hasn't been an issue but just in case
 
 save(data.crsp.cln, file = "180619 data.crsp.cln.RData")
 rm(data.crsp.m)
@@ -262,7 +265,9 @@ data.Davis.bkeq <- data.Davis.bkeq %>%
   gather(Date, Davis.bkeq, -PERMNO, na.rm=TRUE) %>%
   mutate(Date = as.yearmon(ymd(paste0(substr(Date, 2, 5),"-6-01"))))
 # set date June of SAME year when data would have been known (based on French website notes)
+#SOOOO basically what's happening here he is using all the data from whenever during the last year and makes it all june first? or does this generally jsut take december data and then get's it all to be june data samo. Would help if one knew waht the davis book equity file was.....
 
+#hehe this one's the same as in the kai wang (oä) stuff.
 na_locf_until = function(x, n) {
   # in time series data, fill in na's untill indicated n
   l <- cumsum(! is.na(x))
@@ -368,6 +373,8 @@ Form_CharSizePorts2 <- function(main, size, var, wght, ret) { # streamlined vers
     mutate(Size = ifelse(!!size<size.Med, "Small", "Big"),
            Var = ifelse(!!var<var.P30, "Low", ifelse(!!var>var.P70, "High", "Neutral")),
            Port = paste(Size, Var, sep="."))
+  # !!: It's a way to force the evaluation of a variable in the context of the data frame.
+  #For example, in your code, !!size would force the evaluation of the variable size in the context of the dataset being manipulated. This means that instead of treating size as a literal string or an external variable, dplyr will look for a column named size in your data frame.
   
   Ret <- main.rank %>% # name 2 x 3 size-var portfolios
     group_by(Date, Port) %>%
@@ -403,6 +410,7 @@ Form_FF6Ports <- function(df) {
     select(Date:MyCMAA, MyUMD=HML, MyUMDU=High, MyUMDD=Low)
   return(output)
 }
+    #Why are all the factors here with HML? is there some stuff missing or is the HML just the one name in the sorts, while the actual factor compositions are from somewhere else. idgi
 
 load("180619 data.both.FF.m.RData")
 dt.myFF6.m <- Form_FF6Ports(data.both.FF.m) %>%
@@ -470,6 +478,10 @@ Compare_Two_Vectors2(select(dt.myFF6.m, Date, MyUMD), select(dt.FF6.m, Date, UMD
 
 # testing
 # merge(select(dt.myFF6.m, Date, MyCMA), select(dt.FF6.m, Date, CMA), by="Date") %>% View
+
+
+
+
 <!--stackedit_data:
   eyJoaXN0b3J5IjpbMTEyMzcxNDI2NywxODM4MjIwODg2XX0=
   -->
