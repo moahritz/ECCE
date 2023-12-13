@@ -48,7 +48,7 @@ cat("The closed form price is", C,"\n")
 
 
 #2.
-#For the Asian Option we need the entire path and the take the mean of it!
+#For the Asian Option we need the entire path and then take the mean of it!
 #So we have a sequence of 252 days -> take the mean, put it into the max -> then we have one of the 50k simulations 
 
 MC_A = c()
@@ -63,6 +63,21 @@ for (i in 1:50000){
 
 cat("For a Strike Price K =", K,": out of 50.000 Simulations, \nthe mean of the stock's price path was larger than K:\n", length(MC_A[MC_A > 0]),"time(s), i.e,",(length(MC_A[MC_A > 0])/50000),"% of the time, \nby amount(s) of (discounted):", MC_A[MC_A > 0],"\n
     The MC Estimation produces an average discounted payoff of:", mean(MC_A),"\n")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ### Exercise 4 ###
 
