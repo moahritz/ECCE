@@ -410,7 +410,7 @@ Form_FF6Ports <- function(df) {
     select(Date:MyCMAA, MyUMD=HML, MyUMDU=High, MyUMDD=Low)
   return(output)
 }
-    #Why are all the factors here with HML? is there some stuff missing or is the HML just the one name in the sorts, while the actual factor compositions are from somewhere else. idgi
+    #Why are all the factors here with HML? is there some stuff missing or is the HML just the one name in the sorts, while the actual factor compositions are from somewhere else. idgi. Yep, factor variables are created jsut above. even has a title.....
 
 load("180619 data.both.FF.m.RData")
 dt.myFF6.m <- Form_FF6Ports(data.both.FF.m) %>%

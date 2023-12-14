@@ -42,7 +42,7 @@ library(Hmisc)
 wrds <- dbConnect(Postgres(),
                   host='wrds-pgdata.wharton.upenn.edu',
                   port=9737,
-                  user='', #input user ID 
+                  user='nkerwien', #input user ID 
                   password=getPass(),
                   dbname='wrds',
                   sslmode='require')
@@ -57,7 +57,7 @@ na_locf_until = function(x, n) {
 
 
 ## Output directory
-setwd("") #set directory 
+setwd("~/Desktop/econometrics in finance/ECCE") #set directory 
 
 ###############################################################################################
 ### 1. Download raw data files
