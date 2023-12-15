@@ -70,12 +70,16 @@ res <- dbSendQuery(wrds, "select gvkey, cusip, datadate, fyr, fyear, sich, naics
                    from comp.funda
                    where indfmt='INDL' and datafmt='STD' and consol='C' and popsrc='D'")
 data_comp_raw <- dbFetch(res, n=-1) #Setting n to -1 is a common practice in many database-related functions in R. It indicates that you want to fetch all available rows from the query result.
+#save(data_comp_raw, file = "data_comp_raw.RData")
+
 dbClearResult(res)
 
 ## CPI data for perpetual inventory method
 res <- dbSendQuery(wrds, "select *
                     from crsp.tfz_mth_cpi")
 data_cpi_prep <- dbFetch(res, n=-1) 
+#save(data_cpi_prep, file = "data_cpi_prep.RData")
+
 dbClearResult(res)
 
 data_cpi <- data_cpi_prep %>% mutate(datadate = ceiling_date(as.Date(mcaldt,format = "%m/%d/%y"), "month") - days(1)) %>% select(datadate,tmcpiref)
@@ -85,6 +89,8 @@ data_cpi <- data_cpi_prep %>% mutate(datadate = ceiling_date(as.Date(mcaldt,form
 res <- dbSendQuery(wrds, "select gvkey, lpermno, linkdt, linkenddt, linktype, linkprim
                     from crsp.ccmxpf_lnkhist")
 data_ccmlink <- dbFetch(res, n=-1) 
+#save(data_ccmlink, file = "data_ccmlink.RData")
+
 dbClearResult(res)
 
 
@@ -93,16 +99,22 @@ res <- dbSendQuery(wrds, "select date, permno, permco, shrout, prc, hsiccd,
                           ret, retx, vol
                    from crsp.msf")
 data_crsp_msf <- dbFetch(res, n=-1) 
+#save(data_crsp_msf, file = "data_crsp_msf.RData")
+
 dbClearResult(res)
 
 res <- dbSendQuery(wrds, "select date, permno, comnam, shrcd, exchcd
                    from crsp.mse")
 data_crsp_mse <- dbFetch(res, n=-1)
+#save(data_crsp_mse, file = "data_crsp_mse.RData")
+
 dbClearResult(res)
 
 res <- dbSendQuery(wrds, "select dlstdt, permno, dlret
-                   from crspq.msedelist")
+                   from crsp.msedelist")             #check whether it's the 'Q' in crspq that gives the error!
 data_crsp_msedelist <- dbFetch(res, n = -1)
+#save(data_crsp_msedelist, file = "data_crsp_msedelist.RData")
+
 dbClearResult(res)
 
 #xxxx remove later: merge 2021 monthly stock prices by permno (for most recent data)
@@ -166,7 +178,7 @@ crsp_m <- lazy_dt(as.data.table(crsp_prep_final), immutable=FALSE) %>%
   #filter shrcd and exchcd
   filter((shrcd == 10 | shrcd == 11) & (exchcd == 1 | exchcd == 2 | exchcd == 3)) %>% 
   #generate returns from ret, dlret if unavailable
-  mutate(retadj=ifelse(!is.na(ret), ret, ifelse(!is.na(dlret), dlret, NA)),
+  mutate(retadj = ifelse(!is.na(ret), ret, ifelse(!is.na(dlret), dlret, NA_real_)),
          meq = (shrout * abs(prc))/1000) %>%
   #aggregate market equity up to the permco level
   group_by(Date, permco) %>%
@@ -204,7 +216,7 @@ crsp_clean <- lazy_dt(as.data.table(crsp_m1), immutable=FALSE) %>%
   group_by(permno) %>%
   mutate(#calculate portfolio weights
     port.weight = as.numeric(ifelse(!is.na(Lag(me,shift=1)), Lag(me,shift=1), me/(1+retx))), 
-    port.weight = ifelse(is.na(retadj) & is.na(prc), NA, port.weight)) %>% 
+    port.weight = ifelse(is.na(retadj) & is.na(prc), NA_real_, port.weight)) %>% 
   ungroup %>%  
   arrange(Date, permno) %>%   
   select(Date, permno, comnam:port.weight) %>% 
@@ -272,7 +284,7 @@ comp_prep_final <- comp_prep %>%
   ungroup()
 
 ## Run perpetual inventory method program, which outputs ppint2.RData
-source("2_gen_int.R")
+source("ff stuff/2_gen_int.R")
 
 ## Create intangible capital variables 
 comp_clean <- comp_prep_final %>%
