@@ -317,7 +317,7 @@ data_hist_be <- data_hist_be %>%
 
 crsp_comp <- comp_clean  %>%
   merge(crsp_clean, ., by=c("Date", "permno"), all.x=TRUE, allow.cartesian=TRUE) %>%  
-  merge(data_hist_be, by=c("Date", "permno"), all.x=TRUE, allow.caresian=TRUE) %>%
+  merge(data_hist_be, by=c("Date", "permno"), all.x=TRUE, allow.cartesian=TRUE) %>%
   arrange(permno, Date, desc(datadate)) %>%
   distinct(permno, Date, .keep_all = TRUE) %>% #drop duplicates based on datadates 
   #fill in gaps with most recent available, up to 11 months
